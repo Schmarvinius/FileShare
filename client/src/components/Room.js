@@ -19,7 +19,7 @@ const Room = () => {
 
   useEffect(() => {
     // Connect to the socket server
-    socketRef.current = io.connect('http://192.168.178.30:8000');
+    socketRef.current = io.connect('http://localhost:8000');
 
     // Join the room
     socketRef.current.emit('join room', roomID);
