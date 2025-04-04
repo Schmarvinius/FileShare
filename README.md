@@ -35,7 +35,29 @@ Die Anwendung nutzt WebRTC für Peer-to-Peer-Verbindungen und Socket.IO für die
 - **Maximale Teilnehmeranzahl**: Der Raum unterstützt derzeit nur zwei Teilnehmer gleichzeitig.
 - **Dateigröße**: Große Dateien können aufgrund von Speicherbeschränkungen des Browsers Probleme verursachen.
 
-## Setup
+## Setup - Production
+
+To build and run the application in a production environment using Docker:
+
+### Prerequisites
+- Docker installed on your system
+- Local copy of the repository
+
+### Steps
+
+**Build and Start the Services**: Run the following command in the root directory of the project:
+
+```zsh
+docker compose up --build
+```
+
+**Access the Application**:
+- Frontend: Open http://localhost:3000 in your browser.
+- Backend: The backend API will be available at http://localhost:8000.
+
+
+
+## Setup - Development
 Requirements:
 - Lokale Kopie des Repositories
 - Node.js (mit npm), empfohlen: v22.13.1
