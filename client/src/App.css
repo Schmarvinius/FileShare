@@ -4,6 +4,7 @@ body {
 	font-family: Arial, sans-serif;
 	background-color: #f0f2f5;
 	color: #333;
+	align-items: center;
 }
 
 .app-container {
@@ -20,6 +21,7 @@ header {
 	background-color: #4285f4;
 	color: white;
 	padding: 1rem 0;
+	align-items: center;
 	text-align: center;
 	font-size: 1.5rem;
 	font-weight: bold;
