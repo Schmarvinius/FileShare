@@ -405,6 +405,12 @@ const Room = () => {
             : "Waiting for peers..."}
         </p>
         <p>Share this Room ID with others to let them join this room.</p>
+        <button
+          onClick={() => navigator.clipboard.writeText(roomID)}
+          className="copy-button"
+        >
+          Copy Room ID
+        </button>
       </div>
 
       <div className="file-transfer">
