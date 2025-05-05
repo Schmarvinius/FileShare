@@ -1,18 +1,18 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import './CreateRoom.css';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
+import "./CreateRoom.css";
 
 const CreateRoom = () => {
   const navigate = useNavigate();
 
   const createRoom = () => {
     const roomId = uuidv4();
-    navigate(`/room/${roomId}`);
+    navigate(`/room/${roomId}`, { state: { roomId } });
   };
 
   const joinRoom = () => {
-    const roomId = prompt('Enter Room ID:');
+    const roomId = prompt("Enter Room ID:");
     if (roomId) {
       navigate(`/room/${roomId}`);
     }
@@ -24,8 +24,12 @@ const CreateRoom = () => {
       <p>Create a room or join an existing one to start sharing files</p>
 
       <div className="button-group">
-        <button onClick={createRoom} className="create-button">Create New Room</button>
-        <button onClick={joinRoom} className="join-button">Join Existing Room</button>
+        <button onClick={createRoom} className="create-button">
+          Create New Room
+        </button>
+        <button onClick={joinRoom} className="join-button">
+          Join Existing Room
+        </button>
       </div>
     </div>
   );

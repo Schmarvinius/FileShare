@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import CreateRoom from './components/CreateRoom';
-import Room from './components/Room';
-import process from 'process';
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import CreateRoom from "./components/CreateRoom";
+import Room from "./components/Room";
+import logo from "./webrtc_logo.png";
+import process from "process";
 window.process = process;
 
 function App() {
@@ -11,7 +10,14 @@ function App() {
     <Router>
       <div className="app">
         <header>
-          <h1>WebRTC File Sharing</h1>
+          <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+            <img
+              src={logo}
+              alt="WebRTC File Sharing"
+              style={{ width: "80%", maxWidth: "500px", margin: "1rem 0" }}
+              // style={{ height: "50px" }}
+            />
+          </Link>
         </header>
         <main>
           <Routes>
