@@ -31,6 +31,7 @@ io.on("connection", (socket) => {
     // Add user to room
     users[roomID].push(socket.id);
     socketToRoom[socket.id] = roomID;
+    socket.join(roomID);
 
     // Send all existing users to the new user
     const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
