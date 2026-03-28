@@ -279,13 +279,16 @@ const Room = () => {
         if (peer.connected) {
           try {
             await waitForDrain(peer);
-            peer.send(
-              JSON.stringify({
-                type: "chunk",
-                fileId: metadata.id,
-                chunk: Array.from(new Uint8Array(chunk)),
-              }),
-            );
+            // Send chunk as binary: [4-byte fileId length][fileId bytes][raw chunk data]
+            const fileIdBytes = new TextEncoder().encode(metadata.id);
+            const header = new Uint8Array(4);
+            new DataView(header.buffer).setUint32(0, fileIdBytes.length);
+            const chunkData = new Uint8Array(chunk);
+            const packet = new Uint8Array(4 + fileIdBytes.length + chunkData.length);
+            packet.set(header, 0);
+            packet.set(fileIdBytes, 4);
+            packet.set(chunkData, 4 + fileIdBytes.length);
+            peer.send(packet);
           } catch (err) {
             console.error("Error sending chunk:", err);
           }
@@ -343,33 +346,17 @@ const Room = () => {
 
   function handleReceivingData(data) {
     try {
-      const parsed = JSON.parse(data);
-
-      // Handle different message types
-      if (parsed.type === "metadata") {
-        // New file incoming, prepare to receive chunks
-        const { metadata } = parsed;
-        fileChunks.current[metadata.id] = {
-          metadata,
-          chunks: [],
-          receivedSize: 0,
-        };
-
-        // Set progress state for UI
-        setTransferProgress((prev) => ({
-          ...prev,
-          [metadata.id]: { progress: 0, name: metadata.name, sending: false },
-        }));
-      } else if (parsed.type === "chunk") {
-        // Received a chunk, append it
-        const { fileId, chunk } = parsed;
-        const uint8Array = new Uint8Array(chunk);
+      // Binary data = chunk packet
+      if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+        const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+        const fileIdLen = new DataView(bytes.buffer, bytes.byteOffset).getUint32(0);
+        const fileId = new TextDecoder().decode(bytes.slice(4, 4 + fileIdLen));
+        const chunkData = bytes.slice(4 + fileIdLen);
 
         if (fileChunks.current[fileId]) {
-          fileChunks.current[fileId].chunks.push(uint8Array);
-          fileChunks.current[fileId].receivedSize += uint8Array.length;
+          fileChunks.current[fileId].chunks.push(chunkData);
+          fileChunks.current[fileId].receivedSize += chunkData.length;
 
-          // Update progress
           const progress = Math.min(
             100,
             Math.floor(
@@ -384,6 +371,26 @@ const Room = () => {
             [fileId]: { ...prev[fileId], progress },
           }));
         }
+        return;
+      }
+
+      // String data = JSON control message (metadata or complete)
+      const parsed = JSON.parse(data);
+
+      if (parsed.type === "metadata") {
+        // New file incoming, prepare to receive chunks
+        const { metadata } = parsed;
+        fileChunks.current[metadata.id] = {
+          metadata,
+          chunks: [],
+          receivedSize: 0,
+        };
+
+        // Set progress state for UI
+        setTransferProgress((prev) => ({
+          ...prev,
+          [metadata.id]: { progress: 0, name: metadata.name, sending: false },
+        }));
       } else if (parsed.type === "complete") {
         // File transfer complete, assemble and save
         const { fileId } = parsed;
