@@ -253,17 +253,32 @@ const Room = () => {
       }
     });
 
-    // Read and send the file in chunks
+    // Read and send the file in chunks with backpressure
     const chunkSize = 16 * 1024; // 16KB chunks
+    const BUFFER_THRESHOLD = 256 * 1024; // 256KB buffer limit
     const reader = new FileReader();
     let offset = 0;
 
-    reader.onload = (e) => {
+    const waitForDrain = (peer) => {
+      return new Promise((resolve) => {
+        const check = () => {
+          if (!peer._channel || peer._channel.bufferedAmount <= BUFFER_THRESHOLD) {
+            resolve();
+          } else {
+            setTimeout(check, 50);
+          }
+        };
+        check();
+      });
+    };
+
+    reader.onload = async (e) => {
       const chunk = e.target.result;
 
-      peersRef.current.forEach(({ peer }) => {
+      for (const { peer } of peersRef.current) {
         if (peer.connected) {
           try {
+            await waitForDrain(peer);
             peer.send(
               JSON.stringify({
                 type: "chunk",
@@ -275,7 +290,7 @@ const Room = () => {
             console.error("Error sending chunk:", err);
           }
         }
-      });
+      }
 
       offset += chunk.byteLength;
       const progress = Math.min(
