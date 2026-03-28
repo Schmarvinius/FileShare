@@ -15,8 +15,16 @@ const users = {};
 const socketToRoom = {};
 const MAX_USERS_PER_ROOM = 10; // Set a reasonable limit
 
+// Validate room ID: must be a non-empty string, max 128 chars, alphanumeric + hyphens
+const ROOM_ID_REGEX = /^[a-zA-Z0-9-]{1,128}$/;
+
 io.on("connection", (socket) => {
   socket.on("join room", (roomID) => {
+    if (typeof roomID !== "string" || !ROOM_ID_REGEX.test(roomID)) {
+      socket.emit("invalid room", "Invalid room ID format.");
+      return;
+    }
+
     // Initialize room if it doesn't exist
     if (!users[roomID]) {
       users[roomID] = [];
