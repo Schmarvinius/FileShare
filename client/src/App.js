@@ -2,8 +2,6 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import CreateRoom from "./components/CreateRoom";
 import Room from "./components/Room";
 import logo from "./webrtc_logo.png";
-import process from "process";
-window.process = process;
 
 function App() {
   return (
