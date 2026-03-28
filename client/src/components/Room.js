@@ -43,6 +43,14 @@ const Room = () => {
 
     socketRef.current.on("user joined", (payload) => {
       console.log("User joined:", payload.callerID);
+
+      // Prevent duplicate peers on rapid reconnect
+      const existing = peersRef.current.find((p) => p.peerID === payload.callerID);
+      if (existing) {
+        existing.peer.destroy();
+        peersRef.current = peersRef.current.filter((p) => p.peerID !== payload.callerID);
+      }
+
       const peer = addPeer(payload.signal, payload.callerID);
       peersRef.current.push({
         peerID: payload.callerID,
@@ -50,7 +58,10 @@ const Room = () => {
       });
 
       // Add the new peer to the state
-      setPeers((users) => [...users, { peerID: payload.callerID, peer }]);
+      setPeers((users) => [
+        ...users.filter((p) => p.peerID !== payload.callerID),
+        { peerID: payload.callerID, peer },
+      ]);
     });
 
     // Critical fix: Handle receiving returned signal
