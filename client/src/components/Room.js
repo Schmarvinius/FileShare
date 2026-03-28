@@ -30,6 +30,7 @@ const Room = () => {
   const [numConnections, setNumConnections] = useState(0);
   const [roomFull, setRoomFull] = useState(false);
   const [socketConnected, setSocketConnected] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
 
   const navigate = useNavigate();
 
@@ -234,6 +235,26 @@ const Room = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  // Drag & drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && connected && peers.length > 0) {
       setSelectedFile(file);
     }
   };
@@ -515,14 +536,24 @@ const Room = () => {
         </button>
       </div>
 
-      <div className="file-transfer">
+      <div
+        className={`file-transfer${isDragging ? " drag-active" : ""}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <div className="file-select">
-          <input
-            id="file-input"
-            type="file"
-            onChange={handleFileChange}
-            disabled={!connected || peers.length === 0}
-          />
+          <div className="drop-zone">
+            <p className="drop-zone-text">
+              {isDragging ? "Drop file here" : "Drag & drop a file here, or"}
+            </p>
+            <input
+              id="file-input"
+              type="file"
+              onChange={handleFileChange}
+              disabled={!connected || peers.length === 0}
+            />
+          </div>
           <button
             onClick={sendFile}
             disabled={!selectedFile || !connected || peers.length === 0}

@@ -60,6 +60,29 @@ button:disabled {
 	margin-top: 2rem;
 }
 
+.file-transfer.drag-active {
+	background-color: #e8f5e9;
+	border-radius: 8px;
+}
+
+.drop-zone {
+	border: 2px dashed #ccc;
+	border-radius: 8px;
+	padding: 1.5rem;
+	text-align: center;
+	transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.drag-active .drop-zone {
+	border-color: #34a853;
+	background-color: #e8f5e9;
+}
+
+.drop-zone-text {
+	color: #666;
+	margin: 0 0 0.5rem 0;
+}
+
 .file-select {
 	display: flex;
 	flex-direction: column;
