@@ -147,6 +147,7 @@ const Room = () => {
         return [];
       });
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomID]);
 
   // Sync connected state with numConnections
