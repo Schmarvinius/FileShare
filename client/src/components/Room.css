@@ -136,6 +136,11 @@ button:disabled {
 	transition: width 0.2s ease;
 }
 
+.transfer-speed {
+	color: #666;
+	font-size: 0.85rem;
+}
+
 .received-files {
 	margin-top: 2rem;
 }

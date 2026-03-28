@@ -283,7 +283,7 @@ const Room = () => {
 
       setTransferProgress((prev) => ({
         ...prev,
-        [metadata.id]: { progress: 0, name: metadata.name, sending: true },
+        [metadata.id]: { progress: 0, name: metadata.name, sending: true, startTime: Date.now(), transferred: 0 },
       }));
 
       peersRef.current.forEach(({ peer }) => {
@@ -341,7 +341,7 @@ const Room = () => {
 
         setTransferProgress((prev) => ({
           ...prev,
-          [metadata.id]: { ...prev[metadata.id], progress },
+          [metadata.id]: { ...prev[metadata.id], progress, transferred: offset },
         }));
 
         if (offset < file.size) {
@@ -410,7 +410,7 @@ const Room = () => {
 
           setTransferProgress((prev) => ({
             ...prev,
-            [fileId]: { ...prev[fileId], progress },
+            [fileId]: { ...prev[fileId], progress, transferred: fileChunks.current[fileId].receivedSize },
           }));
         }
         return;
@@ -431,7 +431,7 @@ const Room = () => {
         // Set progress state for UI
         setTransferProgress((prev) => ({
           ...prev,
-          [metadata.id]: { progress: 0, name: metadata.name, sending: false },
+          [metadata.id]: { progress: 0, name: metadata.name, sending: false, startTime: Date.now(), transferred: 0 },
         }));
       } else if (parsed.type === "complete") {
         // File transfer complete, assemble and save
@@ -509,6 +509,14 @@ const Room = () => {
       { text, sender: "me", timestamp: Date.now() },
     ]);
     setChatInput("");
+  };
+
+  // Format transfer speed
+  const formatSpeed = (transferred, startTime) => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    if (elapsed < 0.5) return "";
+    const bytesPerSec = transferred / elapsed;
+    return formatBytes(bytesPerSec) + "/s";
   };
 
   // Format file size
@@ -595,11 +603,14 @@ const Room = () => {
 
         {/* Progress Bars */}
         {Object.entries(transferProgress).map(
-          ([fileId, { progress, name, sending }]) => (
+          ([fileId, { progress, name, sending, startTime, transferred }]) => (
             <div key={fileId} className="progress-container">
               <p>
                 {sending ? "Sending: " : "Receiving: "}
                 {name} - {progress}%
+                {progress < 100 && transferred > 0 && (
+                  <span className="transfer-speed"> ({formatSpeed(transferred, startTime)})</span>
+                )}
               </p>
               <div className="progress-bar">
                 <div
