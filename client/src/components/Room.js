@@ -29,6 +29,7 @@ const Room = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [numConnections, setNumConnections] = useState(0);
   const [roomFull, setRoomFull] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(true);
 
   const navigate = useNavigate();
 
@@ -38,9 +39,23 @@ const Room = () => {
   const { roomID } = useParams();
 
   useEffect(() => {
-    // Connect to the socket server
+    // Connect to the socket server with reconnection
     const serverUrl = process.env.REACT_APP_SERVER_URL || window.location.origin;
-    socketRef.current = io.connect(serverUrl);
+    socketRef.current = io.connect(serverUrl, {
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current.on("connect", () => {
+      setSocketConnected(true);
+      // Re-join room on reconnect
+      socketRef.current.emit("join room", roomID);
+    });
+
+    socketRef.current.on("disconnect", () => {
+      setSocketConnected(false);
+    });
 
     // Join the room immediately - no media required
     socketRef.current.emit("join room", roomID);
@@ -478,6 +493,11 @@ const Room = () => {
 
   return (
     <div className="room">
+      {!socketConnected && (
+        <div className="connection-warning">
+          Connection lost. Reconnecting...
+        </div>
+      )}
       <div className="room-info">
         <h2>Room: {roomID}</h2>
         <p>

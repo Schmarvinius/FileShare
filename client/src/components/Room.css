@@ -139,6 +139,16 @@ button:disabled {
 	}
 }
 
+.connection-warning {
+	background-color: #ff9800;
+	color: white;
+	padding: 0.75rem;
+	border-radius: 4px;
+	text-align: center;
+	margin-bottom: 1rem;
+	font-weight: bold;
+}
+
 @media (max-width: 767px) {
 	.room {
 		padding: 1.5rem;
