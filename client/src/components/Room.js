@@ -4,6 +4,23 @@ import io from "socket.io-client";
 import Peer from "simple-peer";
 import "./Room.css";
 
+const ICE_SERVERS = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:global.stun.twilio.com:3478" },
+    {
+      urls: "turn:openrelay.metered.ca:80",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+  ],
+};
+
 const Room = () => {
   const [peers, setPeers] = useState([]);
   const [connected, setConnected] = useState(false);
@@ -128,12 +145,7 @@ const Room = () => {
     const peer = new Peer({
       initiator: true,
       trickle: false,
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:global.stun.twilio.com:3478" },
-        ],
-      },
+      config: ICE_SERVERS,
     });
 
     // Set up data channel as initiator
@@ -171,12 +183,7 @@ const Room = () => {
     const peer = new Peer({
       initiator: false,
       trickle: false,
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:global.stun.twilio.com:3478" },
-        ],
-      },
+      config: ICE_SERVERS,
     });
 
     peer.on("signal", (signal) => {
