@@ -64,6 +64,30 @@ body {
 	background-color: #2e8b57;
 }
 
+.join-button:disabled {
+	background-color: #a0d8b0;
+	cursor: not-allowed;
+}
+
+.join-input-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.join-input-group input {
+	padding: 0.75rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 1rem;
+	text-align: center;
+}
+
+.join-input-group input:focus {
+	outline: none;
+	border-color: #34a853;
+}
+
 @media (min-width: 768px) {
 	.create-room {
 		max-width: 600px;
