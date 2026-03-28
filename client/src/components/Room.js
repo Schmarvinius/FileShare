@@ -20,7 +20,8 @@ const Room = () => {
 
   useEffect(() => {
     // Connect to the socket server
-    socketRef.current = io.connect("http://localhost:8000");
+    const serverUrl = process.env.REACT_APP_SERVER_URL || window.location.origin;
+    socketRef.current = io.connect(serverUrl);
 
     // Join the room immediately - no media required
     socketRef.current.emit("join room", roomID);
