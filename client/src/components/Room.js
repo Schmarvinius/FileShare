@@ -98,6 +98,13 @@ const Room = () => {
     };
   }, [roomID]);
 
+  // Sync connected state with numConnections
+  useEffect(() => {
+    if (numConnections === 0) {
+      setConnected(false);
+    }
+  }, [numConnections]);
+
   // Log connection status changes
   useEffect(() => {
     console.log(
