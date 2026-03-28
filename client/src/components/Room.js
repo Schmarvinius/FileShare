@@ -90,6 +90,11 @@ const Room = () => {
           peer.peer.destroy();
         }
       });
+      // Revoke all object URLs to free memory
+      setFiles((prevFiles) => {
+        prevFiles.forEach((file) => URL.revokeObjectURL(file.url));
+        return [];
+      });
     };
   }, [roomID]);
 
@@ -382,6 +387,7 @@ const Room = () => {
     a.href = file.url;
     a.download = file.name;
     a.click();
+    URL.revokeObjectURL(file.url);
   };
 
   // Format file size
