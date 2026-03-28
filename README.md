@@ -1,39 +1,61 @@
 # FileShare
-FileShare ist eine App, mit der Teilnehmer Dateien direkt miteinander teilen können, ohne dass ein Server die Daten speichert. 
+FileShare ist eine App, mit der Teilnehmer Dateien direkt miteinander teilen können, ohne dass ein Server die Daten speichert.
 Die Anwendung nutzt WebRTC für Peer-to-Peer-Verbindungen und Socket.IO für die Echtzeit-Kommunikation.
 
 ## Ablauf
 
-1. **Raum erstellen**: 
+1. **Raum erstellen**:
    - Öffnen Sie die Anwendung und klicken Sie auf "Create New Room".
    - Ein eindeutiger Raum-ID wird generiert, den Sie mit anderen teilen können.
 
 2. **Raum beitreten**:
-   - Klicken Sie auf "Join Existing Room" und geben Sie die Raum-ID ein, die Sie erhalten haben.
+   - Klicken Sie auf "Join Existing Room" und geben Sie die Raum-ID in das Eingabefeld ein.
+   - Alternativ können Sie einen geteilten Raum-Link direkt im Browser öffnen oder den QR-Code scannen.
 
 3. **Dateien senden**:
-   - Wählen Sie eine Datei aus, indem Sie auf "Choose File" klicken.
-   - Sobald die Verbindung hergestellt ist, können Sie die Datei an andere Teilnehmer im Raum senden.
+   - Wählen Sie eine oder mehrere Dateien aus, indem Sie auf "Choose File" klicken oder Dateien per Drag & Drop in den Upload-Bereich ziehen.
+   - Sobald die Verbindung hergestellt ist, können Sie die Dateien an andere Teilnehmer im Raum senden.
 
 4. **Dateien empfangen**:
    - Empfangen Sie Dateien von anderen Teilnehmern im Raum.
+   - Bilddateien werden mit einer Vorschau angezeigt.
    - Klicken Sie auf die empfangenen Dateien, um sie herunterzuladen.
+
+5. **Chat**:
+   - Nutzen Sie den integrierten Chat, um Textnachrichten direkt über die Peer-to-Peer-Verbindung zu senden.
 
 ## Features
 
 - **WebRTC-basierte Peer-to-Peer-Dateiübertragung**: Dateien werden direkt zwischen den Teilnehmern übertragen, ohne dass ein Server die Daten speichert.
+- **End-to-End-Verschlüsselung**: Alle Übertragungen sind durch WebRTC DTLS verschlüsselt.
 - **Echtzeit-Kommunikation**: Verwendet `socket.io`, um Benutzer in Echtzeit zu verbinden.
-- **Fortschrittsanzeige**: Zeigt den Fortschritt des Datei-Uploads und -Downloads an.
+- **Text-Chat**: Nachrichten werden direkt über den WebRTC-Datenkanal übertragen.
+- **Mehrere Dateien gleichzeitig**: Unterstützung für die Auswahl und den Versand mehrerer Dateien.
+- **Drag & Drop**: Dateien können per Drag & Drop in den Upload-Bereich gezogen werden.
+- **Bildvorschau**: Empfangene Bilddateien werden mit einer Vorschau angezeigt.
+- **Fortschrittsanzeige mit Geschwindigkeit**: Zeigt den Fortschritt und die Übertragungsgeschwindigkeit an.
+- **QR-Code**: Raum-Link als QR-Code teilen, ideal für mobile Geräte.
+- **Raum-Link kopieren**: Kompletter Link statt nur der Raum-ID wird kopiert.
+- **Automatische Wiederverbindung**: Bei Verbindungsabbruch wird automatisch neu verbunden.
+- **TURN-Server-Fallback**: Verbindungen funktionieren auch hinter restriktiven NATs und Firewalls.
 
 ## Technologien
 
-- **Frontend**: React, simple-peer
+- **Frontend**: React, simple-peer, qrcode.react
 - **Backend**: Node.js, Express, Socket.IO
 
 ## Bekannte Probleme
 
-- **Maximale Teilnehmeranzahl**: Der Raum unterstützt derzeit nur zwei Teilnehmer gleichzeitig.
+- **Maximale Teilnehmeranzahl**: Der Raum unterstützt derzeit bis zu 10 Teilnehmer gleichzeitig.
 - **Dateigröße**: Große Dateien können aufgrund von Speicherbeschränkungen des Browsers Probleme verursachen.
+
+## Umgebungsvariablen
+
+| Variable | Beschreibung | Standard |
+|---|---|---|
+| `PORT` | Port des Backend-Servers | `8000` |
+| `CORS_ORIGIN` | Erlaubte CORS-Origin (Backend) | `*` |
+| `REACT_APP_SERVER_URL` | URL des Signaling-Servers (Frontend) | `window.location.origin` |
 
 ## Setup - Production
 
@@ -99,4 +121,3 @@ cd client/
 ```zsh
 npm start
 ```
-
