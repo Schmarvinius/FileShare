@@ -197,3 +197,76 @@ button:disabled {
 		font-size: 1.5rem;
 	}
 }
+
+.chat-section {
+	margin-top: 2rem;
+	border-top: 1px solid #e0e0e0;
+	padding-top: 1rem;
+}
+
+.chat-messages {
+	max-height: 200px;
+	overflow-y: auto;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	padding: 0.5rem;
+	margin-bottom: 0.5rem;
+	background-color: #fafafa;
+}
+
+.chat-empty {
+	color: #999;
+	text-align: center;
+	margin: 1rem 0;
+}
+
+.chat-message {
+	margin-bottom: 0.5rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+}
+
+.chat-me {
+	background-color: #e3f2fd;
+	text-align: right;
+}
+
+.chat-peer {
+	background-color: #f1f1f1;
+}
+
+.chat-sender {
+	font-weight: bold;
+	font-size: 0.8rem;
+	color: #666;
+	display: block;
+}
+
+.chat-text {
+	font-size: 0.95rem;
+}
+
+.chat-input-group {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.chat-input-group input {
+	flex: 1;
+	padding: 0.5rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 0.95rem;
+}
+
+.chat-input-group input:focus {
+	outline: none;
+	border-color: #4285f4;
+}
+
+.chat-input-group button {
+	padding: 0.5rem 1rem;
+	background-color: #4285f4;
+	color: white;
+	font-size: 0.95rem;
+}

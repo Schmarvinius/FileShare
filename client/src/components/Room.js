@@ -31,6 +31,8 @@ const Room = () => {
   const [roomFull, setRoomFull] = useState(false);
   const [socketConnected, setSocketConnected] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
 
   const navigate = useNavigate();
 
@@ -467,6 +469,11 @@ const Room = () => {
           delete fileChunks.current[fileId];
           cleanupProgress(fileId);
         }
+      } else if (parsed.type === "chat") {
+        setChatMessages((prev) => [
+          ...prev,
+          { text: parsed.text, sender: "peer", timestamp: Date.now() },
+        ]);
       }
     } catch (e) {
       console.error("Error parsing received data", e);
@@ -480,6 +487,28 @@ const Room = () => {
     a.download = file.name;
     a.click();
     URL.revokeObjectURL(file.url);
+  };
+
+  // Send chat message
+  const sendChatMessage = () => {
+    const text = chatInput.trim();
+    if (!text || !connected) return;
+
+    peersRef.current.forEach(({ peer }) => {
+      if (peer.connected) {
+        try {
+          peer.send(JSON.stringify({ type: "chat", text }));
+        } catch (err) {
+          console.error("Error sending chat message:", err);
+        }
+      }
+    });
+
+    setChatMessages((prev) => [
+      ...prev,
+      { text, sender: "me", timestamp: Date.now() },
+    ]);
+    setChatInput("");
   };
 
   // Format file size
@@ -606,6 +635,35 @@ const Room = () => {
           </ul>
         </div>
       )}
+
+      {/* Chat */}
+      <div className="chat-section">
+        <h3>Chat</h3>
+        <div className="chat-messages">
+          {chatMessages.length === 0 && (
+            <p className="chat-empty">No messages yet</p>
+          )}
+          {chatMessages.map((msg, i) => (
+            <div key={i} className={`chat-message ${msg.sender === "me" ? "chat-me" : "chat-peer"}`}>
+              <span className="chat-sender">{msg.sender === "me" ? "You" : "Peer"}</span>
+              <span className="chat-text">{msg.text}</span>
+            </div>
+          ))}
+        </div>
+        <div className="chat-input-group">
+          <input
+            type="text"
+            placeholder={connected ? "Type a message..." : "Connect to chat"}
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
+            disabled={!connected}
+          />
+          <button onClick={sendChatMessage} disabled={!connected || !chatInput.trim()}>
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
