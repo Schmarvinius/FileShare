@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import "./Room.css";
@@ -27,7 +27,10 @@ const Room = () => {
   const [files, setFiles] = useState([]);
   const [transferProgress, setTransferProgress] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
-  const [numConnections, setNumConnections] = useState(0); // Track number of active connections
+  const [numConnections, setNumConnections] = useState(0);
+  const [roomFull, setRoomFull] = useState(false);
+
+  const navigate = useNavigate();
 
   const socketRef = useRef();
   const peersRef = useRef([]);
@@ -106,7 +109,7 @@ const Room = () => {
 
     // Room full notification
     socketRef.current.on("room full", () => {
-      alert("Room is full. Please try another room.");
+      setRoomFull(true);
     });
 
     return () => {
@@ -459,6 +462,20 @@ const Room = () => {
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
+
+  if (roomFull) {
+    return (
+      <div className="room">
+        <div className="room-info">
+          <h2>Room is Full</h2>
+          <p>This room has reached its maximum capacity. Please try another room.</p>
+          <button onClick={() => navigate("/")} className="copy-button">
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="room">
