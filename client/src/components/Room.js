@@ -34,7 +34,6 @@ const Room = () => {
 
   const socketRef = useRef();
   const peersRef = useRef([]);
-  const dataChannelRef = useRef(null);
 
   const { roomID } = useParams();
 
