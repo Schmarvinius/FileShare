@@ -214,6 +214,16 @@ const Room = () => {
     }
   };
 
+  // Clean up a transfer progress entry after a delay
+  const cleanupProgress = (fileId) => {
+    setTimeout(() => {
+      setTransferProgress((prev) => {
+        const { [fileId]: _, ...rest } = prev;
+        return rest;
+      });
+    }, 3000);
+  };
+
   // Send the file data
   const sendFile = () => {
     if (!selectedFile || peers.length === 0 || !connected) return;
@@ -301,6 +311,7 @@ const Room = () => {
         setSelectedFile(null);
         // Reset the file input
         document.getElementById("file-input").value = "";
+        cleanupProgress(metadata.id);
       }
     };
 
@@ -392,6 +403,7 @@ const Room = () => {
 
           // Clean up
           delete fileChunks.current[fileId];
+          cleanupProgress(fileId);
         }
       }
     } catch (e) {
