@@ -26,7 +26,7 @@ const Room = () => {
   const [connected, setConnected] = useState(false);
   const [files, setFiles] = useState([]);
   const [transferProgress, setTransferProgress] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [numConnections, setNumConnections] = useState(0);
   const [roomFull, setRoomFull] = useState(false);
   const [socketConnected, setSocketConnected] = useState(true);
@@ -233,9 +233,9 @@ const Room = () => {
 
   // Handle file selection
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setSelectedFiles(files);
     }
   };
 
@@ -253,9 +253,9 @@ const Room = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && connected && peers.length > 0) {
-      setSelectedFile(file);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0 && connected && peers.length > 0) {
+      setSelectedFiles(files);
     }
   };
 
@@ -269,121 +269,116 @@ const Room = () => {
     }, 3000);
   };
 
-  // Send the file data
-  const sendFile = () => {
-    if (!selectedFile || peers.length === 0 || !connected) return;
-
-    // File metadata
-    const metadata = {
-      name: selectedFile.name,
-      type: selectedFile.type,
-      size: selectedFile.size,
-      id: `file-${Date.now()}`,
-    };
-
-    // Set up progress tracking
-    setTransferProgress((prev) => ({
-      ...prev,
-      [metadata.id]: { progress: 0, name: metadata.name, sending: true },
-    }));
-
-    // Send metadata first
-    peersRef.current.forEach(({ peer }) => {
-      if (peer.connected) {
-        try {
-          peer.send(JSON.stringify({ type: "metadata", metadata }));
-        } catch (err) {
-          console.error("Error sending metadata:", err);
-        }
-      }
-    });
-
-    // Read and send the file in chunks with backpressure
-    const chunkSize = 16 * 1024; // 16KB chunks
-    const BUFFER_THRESHOLD = 256 * 1024; // 256KB buffer limit
-    const reader = new FileReader();
-    let offset = 0;
-
-    const waitForDrain = (peer) => {
-      return new Promise((resolve) => {
-        const check = () => {
-          if (!peer._channel || peer._channel.bufferedAmount <= BUFFER_THRESHOLD) {
-            resolve();
-          } else {
-            setTimeout(check, 50);
-          }
-        };
-        check();
-      });
-    };
-
-    reader.onload = async (e) => {
-      const chunk = e.target.result;
-
-      for (const { peer } of peersRef.current) {
-        if (peer.connected) {
-          try {
-            await waitForDrain(peer);
-            // Send chunk as binary: [4-byte fileId length][fileId bytes][raw chunk data]
-            const fileIdBytes = new TextEncoder().encode(metadata.id);
-            const header = new Uint8Array(4);
-            new DataView(header.buffer).setUint32(0, fileIdBytes.length);
-            const chunkData = new Uint8Array(chunk);
-            const packet = new Uint8Array(4 + fileIdBytes.length + chunkData.length);
-            packet.set(header, 0);
-            packet.set(fileIdBytes, 4);
-            packet.set(chunkData, 4 + fileIdBytes.length);
-            peer.send(packet);
-          } catch (err) {
-            console.error("Error sending chunk:", err);
-          }
-        }
-      }
-
-      offset += chunk.byteLength;
-      const progress = Math.min(
-        100,
-        Math.floor((offset / selectedFile.size) * 100),
-      );
+  // Send a single file to all connected peers
+  const sendSingleFile = (file) => {
+    return new Promise((resolve) => {
+      const metadata = {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      };
 
       setTransferProgress((prev) => ({
         ...prev,
-        [metadata.id]: { ...prev[metadata.id], progress },
+        [metadata.id]: { progress: 0, name: metadata.name, sending: true },
       }));
 
-      // If not done, continue reading
-      if (offset < selectedFile.size) {
-        readSlice(offset);
-      } else {
-        // Done sending, notify peer
-        peersRef.current.forEach(({ peer }) => {
+      peersRef.current.forEach(({ peer }) => {
+        if (peer.connected) {
+          try {
+            peer.send(JSON.stringify({ type: "metadata", metadata }));
+          } catch (err) {
+            console.error("Error sending metadata:", err);
+          }
+        }
+      });
+
+      const chunkSize = 16 * 1024;
+      const BUFFER_THRESHOLD = 256 * 1024;
+      const reader = new FileReader();
+      let offset = 0;
+
+      const waitForDrain = (peer) => {
+        return new Promise((drainResolve) => {
+          const check = () => {
+            if (!peer._channel || peer._channel.bufferedAmount <= BUFFER_THRESHOLD) {
+              drainResolve();
+            } else {
+              setTimeout(check, 50);
+            }
+          };
+          check();
+        });
+      };
+
+      reader.onload = async (e) => {
+        const chunk = e.target.result;
+
+        for (const { peer } of peersRef.current) {
           if (peer.connected) {
             try {
-              peer.send(
-                JSON.stringify({
-                  type: "complete",
-                  fileId: metadata.id,
-                }),
-              );
+              await waitForDrain(peer);
+              const fileIdBytes = new TextEncoder().encode(metadata.id);
+              const header = new Uint8Array(4);
+              new DataView(header.buffer).setUint32(0, fileIdBytes.length);
+              const chunkData = new Uint8Array(chunk);
+              const packet = new Uint8Array(4 + fileIdBytes.length + chunkData.length);
+              packet.set(header, 0);
+              packet.set(fileIdBytes, 4);
+              packet.set(chunkData, 4 + fileIdBytes.length);
+              peer.send(packet);
             } catch (err) {
-              console.error("Error sending completion notice:", err);
+              console.error("Error sending chunk:", err);
             }
           }
-        });
+        }
 
-        setSelectedFile(null);
-        // Reset the file input
-        document.getElementById("file-input").value = "";
-        cleanupProgress(metadata.id);
-      }
-    };
+        offset += chunk.byteLength;
+        const progress = Math.min(100, Math.floor((offset / file.size) * 100));
 
-    const readSlice = (o) => {
-      const slice = selectedFile.slice(o, o + chunkSize);
-      reader.readAsArrayBuffer(slice);
-    };
+        setTransferProgress((prev) => ({
+          ...prev,
+          [metadata.id]: { ...prev[metadata.id], progress },
+        }));
 
-    readSlice(0);
+        if (offset < file.size) {
+          readSlice(offset);
+        } else {
+          peersRef.current.forEach(({ peer }) => {
+            if (peer.connected) {
+              try {
+                peer.send(JSON.stringify({ type: "complete", fileId: metadata.id }));
+              } catch (err) {
+                console.error("Error sending completion notice:", err);
+              }
+            }
+          });
+          cleanupProgress(metadata.id);
+          resolve();
+        }
+      };
+
+      const readSlice = (o) => {
+        const slice = file.slice(o, o + chunkSize);
+        reader.readAsArrayBuffer(slice);
+      };
+
+      readSlice(0);
+    });
+  };
+
+  // Send all selected files sequentially
+  const sendFiles = async () => {
+    if (selectedFiles.length === 0 || peers.length === 0 || !connected) return;
+
+    const filesToSend = [...selectedFiles];
+    setSelectedFiles([]);
+    document.getElementById("file-input").value = "";
+
+    for (const file of filesToSend) {
+      await sendSingleFile(file);
+    }
   };
 
   // Receive file data logic
@@ -550,20 +545,21 @@ const Room = () => {
             <input
               id="file-input"
               type="file"
+              multiple
               onChange={handleFileChange}
               disabled={!connected || peers.length === 0}
             />
           </div>
           <button
-            onClick={sendFile}
-            disabled={!selectedFile || !connected || peers.length === 0}
+            onClick={sendFiles}
+            disabled={selectedFiles.length === 0 || !connected || peers.length === 0}
           >
-            Send File
+            Send {selectedFiles.length > 1 ? `${selectedFiles.length} Files` : "File"}
           </button>
-          {selectedFile && (
+          {selectedFiles.length > 0 && (
             <p>
-              Selected file: {selectedFile.name} (
-              {formatBytes(selectedFile.size)})
+              Selected: {selectedFiles.map((f) => f.name).join(", ")} (
+              {formatBytes(selectedFiles.reduce((sum, f) => sum + f.size, 0))})
             </p>
           )}
         </div>
