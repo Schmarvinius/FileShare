@@ -561,10 +561,10 @@ const Room = () => {
         </p>
         <p>Share this Room ID with others to let them join this room.</p>
         <button
-          onClick={() => navigator.clipboard.writeText(roomID)}
+          onClick={() => navigator.clipboard.writeText(window.location.href)}
           className="copy-button"
         >
-          Copy Room ID
+          Copy Room Link
         </button>
       </div>
 
