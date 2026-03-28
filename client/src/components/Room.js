@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import Peer from "simple-peer";
+import { QRCodeSVG } from "qrcode.react";
 import "./Room.css";
 
 const ICE_SERVERS = {
@@ -33,6 +34,8 @@ const Room = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
+
+  const [showQR, setShowQR] = useState(false);
 
   const navigate = useNavigate();
 
@@ -566,6 +569,18 @@ const Room = () => {
         >
           Copy Room Link
         </button>
+        <button
+          onClick={() => setShowQR((prev) => !prev)}
+          className="copy-button"
+          style={{ marginLeft: "0.5rem" }}
+        >
+          {showQR ? "Hide QR" : "Show QR"}
+        </button>
+        {showQR && (
+          <div className="qr-container">
+            <QRCodeSVG value={window.location.href} size={160} />
+          </div>
+        )}
       </div>
 
       <div

@@ -47,6 +47,12 @@ button:disabled {
 	margin-bottom: 2rem;
 }
 
+.qr-container {
+	margin-top: 1rem;
+	display: flex;
+	justify-content: center;
+}
+
 .room-info h2 {
 	font-size: 1.75rem;
 	color: #333;
