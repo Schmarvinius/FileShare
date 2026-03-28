@@ -590,8 +590,17 @@ const Room = () => {
           <ul>
             {files.map((file) => (
               <li key={file.id} onClick={() => downloadFile(file)}>
-                <span className="file-name">{file.name}</span>
-                <span className="file-size">({formatBytes(file.size)})</span>
+                {file.type.startsWith("image/") && (
+                  <img
+                    src={file.url}
+                    alt={file.name}
+                    className="file-preview"
+                  />
+                )}
+                <div className="file-info">
+                  <span className="file-name">{file.name}</span>
+                  <span className="file-size">({formatBytes(file.size)})</span>
+                </div>
               </li>
             ))}
           </ul>

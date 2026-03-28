@@ -149,10 +149,26 @@ button:disabled {
 	padding: 0.5rem;
 	border-bottom: 1px solid #ccc;
 	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
 }
 
 .received-files li:hover {
 	background-color: #f0f2f5;
+}
+
+.file-preview {
+	max-width: 80px;
+	max-height: 80px;
+	border-radius: 4px;
+	object-fit: cover;
+}
+
+.file-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
 }
 
 @media (min-width: 768px) {
