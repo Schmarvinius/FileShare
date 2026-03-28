@@ -62,6 +62,17 @@ button:disabled {
 	color: #666;
 }
 
+.encryption-badge {
+	color: #34a853 !important;
+	font-size: 0.9rem;
+	font-weight: bold;
+	cursor: help;
+}
+
+.lock-icon {
+	font-size: 0.85rem;
+}
+
 .file-transfer {
 	margin-top: 2rem;
 }

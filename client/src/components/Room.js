@@ -562,6 +562,11 @@ const Room = () => {
             ? `Connected (${numConnections} peer${numConnections !== 1 ? "s" : ""})`
             : "Waiting for peers..."}
         </p>
+        {connected && (
+          <p className="encryption-badge" title="Files are transferred directly between peers using WebRTC with DTLS encryption. No data passes through the server.">
+            <span className="lock-icon">&#128274;</span> End-to-end encrypted
+          </p>
+        )}
         <p>Share this Room ID with others to let them join this room.</p>
         <button
           onClick={() => navigator.clipboard.writeText(window.location.href)}
